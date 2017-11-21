@@ -8,6 +8,7 @@ import net.dv8tion.jda.core.entities.User;
 
 import java.awt.*;
 import java.util.List;
+import java.util.Optional;
 
 public class CriminalHistoryCommand extends Command {
     private String idPattern = "^[a-zA-Z0-9]{18}$";
@@ -47,7 +48,15 @@ public class CriminalHistoryCommand extends Command {
                     checking = trigger.getAuthor();
                 }
             } else {
-                checking = trigger.getAuthor();
+                if (id.matches("^.*#\\d{4}$")) {
+                    String[] nameParts = id.split("#"); // 0: name (Gregg), 1: discrim (4040)
+                    Optional<User> oChecking = trigger.getJDA().getUsersByName(nameParts[0], true).stream().filter(u -> u.getDiscriminator().equals(nameParts[1])).findFirst();
+
+                    checking = oChecking.orElseGet(trigger::getAuthor);
+
+                } else {
+                    checking = trigger.getAuthor();
+                }
             }
         }
 
