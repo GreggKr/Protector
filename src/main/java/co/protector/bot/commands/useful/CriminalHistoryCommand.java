@@ -10,6 +10,8 @@ import java.awt.*;
 import java.util.List;
 
 public class CriminalHistoryCommand extends Command {
+    private String idPattern = "^[a-zA-Z0-9]{18}$";
+
     @Override
     public String getTrigger() {
         return "history";
@@ -33,13 +35,22 @@ public class CriminalHistoryCommand extends Command {
 
     @Override
     public void execute(Message trigger, String args) {
-        User checking;
+        User checking = null;
         List<User> mentions = trigger.getMentionedUsers();
         if (!mentions.isEmpty()) {
             checking = mentions.get(0);
         } else {
-            checking = trigger.getAuthor();
+            String id = args.split("\\s+")[0];
+            if (id.matches(idPattern)) {
+                checking = trigger.getJDA().getUserById(id);
+                if (checking == null) {
+                    checking = trigger.getAuthor();
+                }
+            } else {
+                checking = trigger.getAuthor();
+            }
         }
+
         long bans = UserData.getBans(checking.getId());
         long links = UserData.getLinks(checking.getId());
         String user = checking.getName() + "#" + checking.getDiscriminator();
